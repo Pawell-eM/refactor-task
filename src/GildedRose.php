@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 final class GildedRose
 {
-    public function updateQuality($item)
+    public function updateQuality(ItemInterface $item): void
     {
         if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
             if ($item->quality > 0) {
@@ -54,5 +56,4 @@ final class GildedRose
             }
         }
     }
-
 }
