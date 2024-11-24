@@ -47,6 +47,9 @@ class GildedRoseTest extends TestCase
             'Sulfuras after sell in date' => ['Sulfuras, Hand of Ragnaros', -1, 80, -1, 80],
             'Elixir of the Mongoose before sell in date' => ['Elixir of the Mongoose', 10, 10, 9, 9],
             'Elixir of the Mongoose sell in date' => ['Elixir of the Mongoose', 0, 10, -1, 8],
+            'Elixir of the Mongoose after sell in date' => ['Elixir of the Mongoose', -1, 8, -2, 6],
+            'Elixir of the Mongoose after sell in date with one quality' => ['Elixir of the Mongoose', -1, 1, -2, 0],
+            'Elixir of the Mongoose after sell in date with zero quality' => ['Elixir of the Mongoose', -2, 0, -3, 0],
         ];
     }
 }
