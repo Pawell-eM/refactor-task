@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace App;
 
-interface ItemInterface
-{
-    public function updateQuality(): void;
-}
+use DateTime;
 
 class Item implements ItemInterface
 {
-    const DAILY_QUALITY_CHANGE = -1;
+    protected int $dailyQualityChange = -1;
+    protected int $maxQuality = 50;
 
-    public string $name;
-    public int $sell_in;
-    public int $quality;
+    protected string $name;
+    protected int $sellIn;
+    protected int $quality;
+    protected ?DateTime $lastUpdatedTime = null; # better if quality will be updated after midnigth, to not bother about date change that can occur
 
-    protected DateTime $lastUpdatedTime;
-
-    function __construct(string $name, int $sell_in, int $quality)
+    function __construct(string $name, int $sellIn, int $quality)
     {
         $this->name = $name;
-        $this->sell_in = $sell_in;
+        $this->sellIn = $sellIn;
         $this->quality = $quality;
 
         $this->qualityAssurance();
@@ -30,7 +27,22 @@ class Item implements ItemInterface
 
     public function __toString(): string
     {
-        return "{$this->name}, {$this->sell_in}, {$this->quality}";
+        return "{$this->name}, {$this->sellIn}, {$this->quality}";
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getQuality(): int
+    {
+        return $this->quality;
+    }
+
+    public function getSellIn(): int
+    {
+        return $this->sellIn;
     }
 
     public function updateQuality(): void
@@ -40,18 +52,33 @@ class Item implements ItemInterface
             return;
         }
 
-        $this->sell_in--;
-        if (self::DAILY_QUALITY_CHANGE !== 0) {
-            $quality_change_factor = ($this->sell_in < 0) ? 2 : 1;
-            $this->quality += self::DAILY_QUALITY_CHANGE * $quality_change_factor;
+        $this->sellIn--;
+        if ($this->dailyQualityChange !== 0) {
+            $this->quality = $this->calculateQualityValue();
             $this->qualityAssurance();
         }
-        $this->lastUpdatedTime = $now;
+
+        $this->setLastUpdated($now);
     }
 
-    protected function wasUpdatedToday(DateTime $now): bool
+    protected function calculateQualityValue(): int
     {
-        return $this->lastUpdatedTime !== null && $now->format('Ymd') === $this->lastUpdatedTime->format('Ymd');
+        return $this->quality + $this->dailyQualityChange * $this->getQualityChangeFactor();
+    }
+
+    protected function getQualityChangeFactor(): int
+    {
+        return ($this->sellIn < 0) ? 2 : 1;
+    }
+
+    protected function wasUpdatedToday(DateTime $today): bool
+    {
+        return $this->lastUpdatedTime !== null && $today->format('Ymd') === $this->lastUpdatedTime->format('Ymd');
+    }
+
+    protected function setLastUpdated(DateTime $time): void
+    {
+        $this->lastUpdatedTime = $time;
     }
 
     protected function qualityAssurance(): void
@@ -59,63 +86,8 @@ class Item implements ItemInterface
         if ($this->quality < 0) {
             $this->quality = 0;
         }
-        elseif ($this->quality > 50) {
-            $this->quality = 50;
+        elseif ($this->quality > $this->maxQuality) {
+            $this->quality = $this->maxQuality;
         }
-    }
-}
-
-class AgedBrie extends Item
-{
-    const DAILY_QUALITY_CHANGE = 1;
-}
-
-class BackstagePass extends Item
-{
-    const DAILY_QUALITY_CHANGE = 0; # different logic applied below
-
-    public function updateQuality(): void
-    {
-        $now = new DateTime();
-        if ($this->wasUpdatedToday($now)) {
-            return;
-        }
-
-        $this->sell_in--;
-
-        if ($this->sell_in <= 10) {
-            $quality_change_factor = 2;
-            if ($this->sell_in <= 5) {
-                $quality_change_factor = 3;
-            }
-            elseif ($this->sell_in < 0) {
-                $quality_change_factor = 0;
-            }
-
-            $this->quality += $this->qualityDailyChange * $quality_change_factor;
-            $this->qualityAssurance();
-        }
-
-        $this->lastUpdatedTime = $now;
-    }
-}
-
-abstract class LegendaryItem extends Item
-{
-    const DAILY_QUALITY_CHANGE = 0;
-
-    public function updateQuality(): void
-    {
-        return;
-    }
-}
-
-class Sulfuras extends LegendaryItem
-{
-    function __construct($name)
-    {
-        $this->name = $name;
-        $this->sell_in = 0;
-        $this->quality = 80;
     }
 }
