@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Item;
 
 abstract class LegendaryItem extends Item
 {

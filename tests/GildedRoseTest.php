@@ -12,7 +12,7 @@ class GildedRoseTest extends TestCase
      */
     public function testUpdateQualityTest(string $className, string $name, int $sellIn, int $quality, int $expectedSellIn, int $expectedQuality): void
     {
-        $className = 'App\\' . $className;
+        $className = 'App\\Item\\' . $className;
         $item = new $className($name, $sellIn, $quality);
 
         $gildedRose = new GildedRose();
